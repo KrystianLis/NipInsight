@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  nip-insight-api:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=master;User=sa;Password=P@ssword1;TrustServerCertificate=True;MultipleActiveResultSets=true;
+      - ASPNETCORE_URLS=http://+:80
+      - WlApi_BasePath=https://wl-api.mf.gov.pl
+    container_name: nip-insight-api
+    restart: unless-stopped
+    ports:
+      - 5020:80
+    depends_on:
+      - db
+    networks:
+      - nipinsight
+
+  nip-insight-app:
+    build:
+      context: ../frontend/nip-insight-frontend
+      dockerfile: Dockerfile
+    container_name: nip-insight-app
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    networks:
+      - nipinsight
+
+  db:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    environment:
+      - SA_PASSWORD=P@ssword1
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    networks:
+      - nipinsight
+
+networks:
+  nipinsight:
+    name: nip-insight-network
